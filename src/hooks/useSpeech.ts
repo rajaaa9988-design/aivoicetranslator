@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { getSettings } from "@/lib/storage";
 
 type SpeechRecognitionLike = {
   continuous: boolean;
@@ -80,12 +81,34 @@ export function useSpeechRecognition(lang: string) {
   return { transcript, interim, isListening, supported, start, stop, reset };
 }
 
-export function speak(text: string, lang: string) {
+/** Try to pick the best voice for a language code, honoring gender preference. */
+function pickVoice(lang: string, gender: "female" | "male" | "auto"): SpeechSynthesisVoice | undefined {
   if (typeof window === "undefined" || !window.speechSynthesis) return;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return;
+  const base = lang.split("-")[0].toLowerCase();
+  const langMatch = voices.filter(
+    (v) => v.lang.toLowerCase() === lang.toLowerCase() || v.lang.toLowerCase().startsWith(base),
+  );
+  if (!langMatch.length) return voices[0];
+
+  if (gender === "auto") return langMatch[0];
+
+  const femaleHints = /female|woman|samantha|victoria|karen|tessa|allison|zira|google.*?\bfemale\b|google.*?\b(?:hindi|marathi|उ?मा|aditi)\b/i;
+  const maleHints = /male|man|daniel|alex|fred|david|google.*?\bmale\b|ravi|hemant/i;
+  const wanted = gender === "female" ? femaleHints : maleHints;
+  return langMatch.find((v) => wanted.test(v.name)) ?? langMatch[0];
+}
+
+export function speak(text: string, lang: string, overrides?: { rate?: number; gender?: "female" | "male" | "auto" }) {
+  if (typeof window === "undefined" || !window.speechSynthesis || !text) return;
+  const s = getSettings();
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = lang;
-  utter.rate = 1;
+  utter.rate = overrides?.rate ?? s.rate;
   utter.pitch = 1;
+  const voice = pickVoice(lang, overrides?.gender ?? s.voiceGender);
+  if (voice) utter.voice = voice;
   window.speechSynthesis.speak(utter);
 }
