@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { BottomNav } from "@/components/BottomNav";
 
 function NotFoundComponent() {
   return (
@@ -71,20 +72,34 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1, viewport-fit=cover",
+      },
+      { title: "LinguaVoice AI — Real-time Voice Translator" },
+      {
+        name: "description",
+        content:
+          "Speak in one language, hear it instantly in another. AI voice translation across English, Hindi, Marathi, Spanish, French, German and more.",
+      },
+      { name: "theme-color", content: "#0a0a1a" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "LinguaVoice" },
+      { property: "og:title", content: "LinguaVoice AI" },
+      {
+        property: "og:description",
+        content: "Real-time AI voice translation for 15+ languages.",
+      },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.webmanifest" },
       {
-        rel: "stylesheet",
-        href: appCss,
+        rel: "preconnect",
+        href: "https://fonts.googleapis.com",
       },
     ],
   }),
@@ -113,7 +128,15 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <div className="min-h-[100dvh] bg-background text-foreground">
+        {/* Background glow */}
+        <div className="pointer-events-none fixed inset-0 -z-10">
+          <div className="absolute -top-40 left-1/4 h-[500px] w-[500px] rounded-full bg-primary/20 blur-[120px]" />
+          <div className="absolute top-1/2 right-0 h-[400px] w-[400px] rounded-full bg-primary/10 blur-[120px]" />
+        </div>
+        <Outlet />
+        <BottomNav />
+      </div>
     </QueryClientProvider>
   );
 }
